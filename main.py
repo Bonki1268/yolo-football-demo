@@ -9,7 +9,8 @@ def main():
     tracker = Tracker(
         "/Users/sam/Documents/Project/basketball/yolo_demo/my-app/models/best.pt")
 
-    tracker.get_object_tracks(video_frames)
+    tracker.get_object_tracks(
+        video_frames, read_db=True, db_path="/Users/sam/Documents/Project/basketball/yolo_demo/my-app/db/db.pkl")
 
     output_video = save_video(video_frames, "result.mp4")
 

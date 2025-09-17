@@ -1,5 +1,7 @@
 from ultralytics import YOLO
 import supervision as sv
+import pickle
+import os
 
 
 class Tracker:
@@ -18,11 +20,16 @@ class Tracker:
 
         return detections
 
-    def get_object_tracks(self, frames):
+    def get_object_tracks(self, frames, read_db=False, db_path=None):
+
+        if read_db and db_path is not None and os.path.exists(db_path):
+            with open(db_path, "rb") as file:
+                track_datas = pickle.load(file)
+            return track_datas
 
         detection = self.detect_frames(frames)
 
-        track_data = {
+        track_datas = {
             "players": [],
             "referees": [],
             "ball": []
@@ -41,9 +48,9 @@ class Tracker:
             # 追蹤
             get_tracks = self.tracker.update_with_detections(sv_detection)
 
-            track_data["players"].append({})
-            track_data["referees"].append({})
-            track_data["ball"].append({})
+            track_datas["players"].append({})
+            track_datas["referees"].append({})
+            track_datas["ball"].append({})
 
             for frame_tracks in get_tracks:
                 box = frame_tracks[0].tolist()
@@ -55,10 +62,11 @@ class Tracker:
                 # print("Track_ID:", track_id)
 
                 if class_id == object_names_inverse["player"]:
-                    track_data["players"][frame_index][track_id] = {"box": box}
+                    track_datas["players"][frame_index][track_id] = {
+                        "box": box}
 
                 if class_id == object_names_inverse["referee"]:
-                    track_data["referees"][frame_index][track_id] = {
+                    track_datas["referees"][frame_index][track_id] = {
                         "box": box}
 
             for frame_tracks in get_tracks:
@@ -66,8 +74,13 @@ class Tracker:
                 class_id = frame_tracks[3]
 
                 if class_id == object_names_inverse["ball"]:
-                    track_data["ball"][frame_index][1] = {"box": box}
+                    track_datas["ball"][frame_index][1] = {"box": box}
 
-            print(track_data)
-            print(object_names)
-            break
+            # print(track_datas)
+            # print(object_names)
+            # break
+
+            if db_path is not None:
+                with open(db_path, "wb") as file:
+                    pickle.dump(track_datas, file)
+            return track_datas
