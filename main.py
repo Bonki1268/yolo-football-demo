@@ -9,10 +9,12 @@ def main():
     tracker = Tracker(
         "/Users/sam/Documents/Project/basketball/yolo_demo/my-app/models/best.pt")
 
-    tracker.get_object_tracks(
+    track_datas = tracker.get_object_tracks(
         video_frames, read_db=True, db_path="/Users/sam/Documents/Project/basketball/yolo_demo/my-app/db/db.pkl")
 
-    output_video = save_video(video_frames, "result.mp4")
+    output_frames = tracker.add_annotations(video_frames, track_datas)
+
+    output_video = save_video(output_frames, "result.mp4")
 
 
 if __name__ == "__main__":
