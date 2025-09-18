@@ -88,7 +88,7 @@ class Tracker:
 
         return track_datas
 
-    def draw_ellipse(self, frame, box, color):
+    def draw_ellipse(self, frame, box, color, track_id=None):
         x_center, _ = get_center(box)
         y_center = int(box[3])
         width = int(get_width(box))
@@ -105,6 +105,40 @@ class Tracker:
             lineType=cv2.LINE_8
         )
 
+        rect_width = 36
+        rect_height = 16
+        rect_x1 = x_center - rect_width//2
+        rect_x2 = x_center + rect_width//2
+        rect_y1 = y_center + rect_height//2
+        rect_y2 = y_center + rect_height + rect_height//2
+
+        if track_id is not None:
+            cv2.rectangle(
+                frame,
+                (int(rect_x1), int(rect_y1)),
+                (int(rect_x2), int(rect_y2)),
+                color,
+                cv2.FILLED
+            )
+
+            text_x1 = rect_x1 + 5
+            text_y1 = rect_y2
+
+            if 9 < track_id < 100:
+                text_x1 += rect_width//2//2 - 5
+            if track_id < 10:
+                text_x1 += rect_width//2 - 8
+
+            cv2.putText(
+                frame,
+                f"{track_id}",
+                (int(text_x1), int(text_y1)),
+                cv2.FONT_HERSHEY_COMPLEX,
+                0.5,
+                (11, 45, 100),
+                2
+            )
+
         return frame
 
     def add_annotations(self, frames, track_datas):
@@ -118,9 +152,9 @@ class Tracker:
 
             for track_id, player in players.items():
                 frame = self.draw_ellipse(
-                    frame, player["box"], (255, 255, 255))
+                    frame, player["box"], (255, 255, 255), track_id)
 
-            for track_id, referee in referees.items():
+            for _, referee in referees.items():
                 frame = self.draw_ellipse(frame, referee["box"], (0, 255, 255))
 
             output_frames.append(frame)
